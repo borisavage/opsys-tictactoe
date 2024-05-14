@@ -1,3 +1,8 @@
+.center {
+  margin: auto;
+  width: 13%;
+  padding: 10px;
+}
 #value
 {
     color:white;
@@ -86,7 +91,7 @@ body{
     margin-right: auto;
     margin-top: 10px;
     margin-bottom: 10px;
-    position: relative;
+    position: absolute center;
 }
 
 #loading

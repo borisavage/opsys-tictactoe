@@ -63,7 +63,7 @@
       <div id="square5"></div>
     </div>
 
-    <div id="wholeBoard">
+    <div class="center" id="wholeBoard">
       <div id="buttonBoard">
         <button id="button1" class="button"></button>
         <button id="button2" class="button"></button>
@@ -167,13 +167,16 @@
       {
         document.getElementById(`${p1_id}`).innerText="X";
         document.getElementById(`${p1_id}`).disabled=true;
-        document.getElementById(`${p1_id}`).style.color="black"
+        document.getElementById(`${p1_id}`).style.color="white"
+        document.getElementById(`${p1_id}`).style.fontSize = "50px"
       }
       if(p2_id !='')
       {
         document.getElementById(`${p2_id}`).innerText="O";
         document.getElementById(`${p2_id}`).disabled=true;
-        document.getElementById(`${p2_id}`).style.color="black"
+        document.getElementById(`${p2_id}`).style.color="white"
+        document.getElementById(`${p2_id}`).style.fontSize = "50px"
+        
       }
       check(name, (foundObj.sum))
     })
