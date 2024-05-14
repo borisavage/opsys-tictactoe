@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+      <title>OpSys TicTacToe</title>
+
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+
+  </head>
+
+  <body>
+
+    <main> 
+
+        <h1 class="h1" type="header1">
+          <strong>Web TicTacToe!</strong>
+          <div id="container-stars">
+            <div id="stars"></div>
+          </div>
+        
+          <div id="glow">
+            <div class="circle"></div>
+            <div class="circle"></div>
+          </div>
+        </h1>
+
+        <div class="background"></div>
+        
+
+    </main>
+
+
+    <div style="display: flex; width: 95vw; position: relative;">
+
+        <p id="userContainer">You: <span id = "user"></span></p>
+        <p style="position: absolute; right: 0;" id="opponentNameContainer">Opponent: <span id = "opponentName"></span></p>
+
+    </div>
+    <br>
+
+    <p id="valueContainer">You are playing as: <span id = "value"></span></p>
+    <br>
+
+    <p id="tellTurn">X's turn</p>
+
+    <div>
+      <p id="enterName">Enter your name below: </p>
+      <input type="text" placeholder="Enter name..." id="name" autocomplete="off">
+    </div>
+
+    <button id="find">Search for another player...</button>
+
+    <div id="squares" class="loadingspinner">
+      <div id="square1"></div>
+      <div id="square2"></div>
+      <div id="square3"></div>
+      <div id="square4"></div>
+      <div id="square5"></div>
+    </div>
+
+    <div id="wholeBoard">
+      <div id="buttonBoard">
+        <button id="button1" class="button"></button>
+        <button id="button2" class="button"></button>
+        <button id="button3" class="button"></button>
+        <button id="button4" class="button"></button>
+        <button id="button5" class="button"></button>
+        <button id="button6" class="button"></button>
+        <button id="button7" class="button"></button>
+        <button id="button8" class="button"></button>
+        <button id="button9" class="button"></button>
+      </div>
+    </div>
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    document.getElementById("squares").style.display="none"
+    document.getElementById("wholeBoard").style.display="none"
+    document.getElementById("tellTurn").style.display="none"
+    document.getElementById("valueContainer").style.display="none"
+    document.getElementById("userContainer").style.display="none"
+    document.getElementById("opponentNameContainer").style.display="none"
+
+    let name;
+
+    document.getElementById("find").addEventListener("click", function(){
+      console.log("Click");
+      name = document.getElementById("name").value;
+
+      document.getElementById("user").innerText = name;
+
+      if(name == null || name == "")
+      {
+        alert("Enter a name!");
+      }
+      else
+      {
+        console.log("click with name");
+        socket.emit('find',{name: name});
+        console.log(name);
+        document.getElementById("squares").style.display="block"
+        document.getElementById("find").disabled = true;
+      }
+    })
+
+    socket.on('find',(e)=>{
+      let allPlayersArray = e.allPlayers;
+      console.log("html", allPlayersArray);
+
+      if(name != '')
+      {
+        document.getElementById("find").style.display="none";
+        document.getElementById("enterName").style.display="none";
+        document.getElementById("name").style.display="none";
+        document.getElementById("wholeBoard").style.display="block";
+        document.getElementById("tellTurn").style.display="block";
+        document.getElementById("tellTurn").innerText = "X's Turn";
+        document.getElementById("valueContainer").style.display="block";
+        document.getElementById("userContainer").style.display="block";
+        document.getElementById("opponentNameContainer").style.display="block";
+        document.getElementById("squares").style.display="none"
+      }
+
+      let opponentName;
+      let value;
+
+      const foudnObj = allPlayersArray.find(obj=>obj.p1.p1name == `${name}` || obj.p2.p2name ==`${name}`);
+      foudnObj.p1.p1name == `${name}` ? opponentName = foudnObj.p2.p2name : opponentName = foudnObj.p1.p1name;
+      foudnObj.p1.p1name == `${name}` ? value = foudnObj.p1.p1value : value = foudnObj.p2.p2value;
+
+      document.getElementById("opponentName").innerText = opponentName;
+      document.getElementById("value").innerText = value;
+      console.log("it worked");
+    })
+
+    document.querySelectorAll(".button").forEach(e=>{
+        e.addEventListener("click",function(){
+        let value = document.getElementById("value").innerText;
+        e.innerText = value;
+
+        socket.emit("playing", {value: value,id: e.id,name: name})
+      })
+    })
+
+    socket.on("playing", (e)=>{
+      const foundObj = (e.allPlayers).find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
+      p1_id = foundObj.p1.p1move;
+      p2_id = foundObj.p2.p2move;
+
+      if((foundObj.sum)%2 == 0)
+      {
+        document.getElementById("tellTurn").innerText="O's turn";
+      }
+      else
+      {
+        document.getElementById("tellTurn").innerText="X's turn";
+      }
+
+      if(p1_id != '')
+      {
+        document.getElementById(`${p1_id}`).innerText="X";
+        document.getElementById(`${p1_id}`).disabled=true;
+        document.getElementById(`${p1_id}`).style.color="black"
+      }
+      if(p2_id !='')
+      {
+        document.getElementById(`${p2_id}`).innerText="O";
+        document.getElementById(`${p2_id}`).disabled=true;
+        document.getElementById(`${p2_id}`).style.color="black"
+      }
+      check(name, (foundObj.sum))
+    })
+
+    function check(name, sum)
+    {
+      document.getElementById("button1").innerText == '' ? b1 = 0 : b1 = document.getElementById("button1").innerText;
+      document.getElementById("button2").innerText == '' ? b2 = 1 : b2 = document.getElementById("button2").innerText;
+      document.getElementById("button3").innerText == '' ? b3 = 2 : b3 = document.getElementById("button3").innerText;
+      document.getElementById("button4").innerText == '' ? b4 = 3 : b4 = document.getElementById("button4").innerText;
+      document.getElementById("button5").innerText == '' ? b5 = 4 : b5 = document.getElementById("button5").innerText;
+      document.getElementById("button6").innerText == '' ? b6 = 5 : b6 = document.getElementById("button6").innerText;
+      document.getElementById("button7").innerText == '' ? b7 = 6 : b7 = document.getElementById("button7").innerText;
+      document.getElementById("button8").innerText == '' ? b8 = 7 : b8 = document.getElementById("button8").innerText;
+      document.getElementById("button9").innerText == '' ? b9 = 8 : b9 = document.getElementById("button9").innerText;
+
+      if((b1 == b2 && b2 == b3)||(b4 == b5 && b5 == b6)||(b7 == b8 && b8 == b9)||(b1 == b4 && b4 == b7)||(b2 == b5 && b5 == b8)||(b3 == b6 && b6 == b9)||(b1 == b5 && b5 == b9)||(b3 == b5 && b5 == b7))
+      {
+        socket.emit("gameOver", {name: name})
+        setTimeout(()=>{
+          sum %2 == 0 ? alert("X wins!") : alert("O wins!");
+          setTimeout(()=>{
+            location.reload();
+          }, 2000)
+        }, 100)
+      }
+      else if(sum == 10)
+      {
+        socket.emit("gameOver", {name: name})
+        setTimeout(()=>{
+          alert("The game is a draw.");
+          setTimeout(()=>{
+            location.reload();
+          }, 2000)
+        }, 100)
+      }
+    }
+
+  </script>
+</html>
