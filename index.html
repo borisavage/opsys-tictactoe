@@ -16,7 +16,7 @@
   <body>
 
     <main> 
-
+      <!-- Header for the site-->
         <h1 class="h1" type="header1">
           <strong>Web TicTacToe!</strong>
           <div id="container-stars">
@@ -36,19 +36,20 @@
 
 
     <div style="display: flex; width: 95vw; position: relative;">
-
+      <!-- defines the elements used for you and the opponent you're playing against -->
         <p id="userContainer">You: <span id = "user"></span></p>
         <p style="position: absolute; right: 0;" id="opponentNameContainer">Opponent: <span id = "opponentName"></span></p>
 
     </div>
     <br>
-
+      <!-- the elements of whos turn it is -->
     <p id="valueContainer">You are playing as: <span id = "value"></span></p>
     <br>
 
     <p id="tellTurn">X's turn</p>
 
     <div>
+      <!-- giving users the ability to pick their name -->
       <p id="enterName">Enter your name below: </p>
       <input type="text" placeholder="Enter name..." id="name" autocomplete="off">
     </div>
@@ -63,6 +64,7 @@
       <div id="square5"></div>
     </div>
 
+    <!-- defines the tictactoe board -->
     <div class="center" id="wholeBoard">
       <div id="buttonBoard">
         <button id="button1" class="button"></button>
@@ -81,6 +83,7 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    //hides all the elements not needed when a user first goes to the website
     document.getElementById("squares").style.display="none"
     document.getElementById("wholeBoard").style.display="none"
     document.getElementById("tellTurn").style.display="none"
@@ -89,19 +92,20 @@
     document.getElementById("opponentNameContainer").style.display="none"
 
     let name;
-
+    //listens for user click in order to message the server
     document.getElementById("find").addEventListener("click", function(){
       console.log("Click");
       name = document.getElementById("name").value;
 
       document.getElementById("user").innerText = name;
-
+      //checks if the user entered a name
       if(name == null || name == "")
       {
         alert("Enter a name!");
       }
       else
       {
+        //sends the users entered name to the server and shows the loading icon + disables search button
         console.log("click with name");
         socket.emit('find',{name: name});
         console.log(name);
@@ -113,7 +117,7 @@
     socket.on('find',(e)=>{
       let allPlayersArray = e.allPlayers;
       console.log("html", allPlayersArray);
-
+      //when users are playing, show tictactoe board and hide unnecessary stuff
       if(name != '')
       {
         document.getElementById("find").style.display="none";
@@ -130,21 +134,21 @@
 
       let opponentName;
       let value;
-
-      const foudnObj = allPlayersArray.find(obj=>obj.p1.p1name == `${name}` || obj.p2.p2name ==`${name}`);
-      foudnObj.p1.p1name == `${name}` ? opponentName = foudnObj.p2.p2name : opponentName = foudnObj.p1.p1name;
-      foudnObj.p1.p1name == `${name}` ? value = foudnObj.p1.p1value : value = foudnObj.p2.p2value;
+      //find players in the array, setting them to player 1 and 2 respectively
+      const foundObj = allPlayersArray.find(obj=>obj.p1.p1name == `${name}` || obj.p2.p2name ==`${name}`);
+      foundObj.p1.p1name == `${name}` ? opponentName = foundObj.p2.p2name : opponentName = foundObj.p1.p1name;
+      foundObj.p1.p1name == `${name}` ? value = foundObj.p1.p1value : value = foundObj.p2.p2value;
 
       document.getElementById("opponentName").innerText = opponentName;
       document.getElementById("value").innerText = value;
       console.log("it worked");
     })
-
+    //when you click on the square, it will put your corresponding X/O
     document.querySelectorAll(".button").forEach(e=>{
         e.addEventListener("click",function(){
         let value = document.getElementById("value").innerText;
         e.innerText = value;
-
+        //emits the move to the server
         socket.emit("playing", {value: value,id: e.id,name: name})
       })
     })
@@ -153,7 +157,7 @@
       const foundObj = (e.allPlayers).find(obj => obj.p1.p1name == `${name}` || obj.p2.p2name == `${name}`);
       p1_id = foundObj.p1.p1move;
       p2_id = foundObj.p2.p2move;
-
+      //whos move it is from the playing array and previous move
       if((foundObj.sum)%2 == 0)
       {
         document.getElementById("tellTurn").innerText="O's turn";
@@ -162,7 +166,7 @@
       {
         document.getElementById("tellTurn").innerText="X's turn";
       }
-
+      //p1 will be X and p2 will be O always
       if(p1_id != '')
       {
         document.getElementById(`${p1_id}`).innerText="X";
@@ -180,7 +184,7 @@
       }
       check(name, (foundObj.sum))
     })
-
+    //checks for winner
     function check(name, sum)
     {
       document.getElementById("button1").innerText == '' ? b1 = 0 : b1 = document.getElementById("button1").innerText;
@@ -192,11 +196,12 @@
       document.getElementById("button7").innerText == '' ? b7 = 6 : b7 = document.getElementById("button7").innerText;
       document.getElementById("button8").innerText == '' ? b8 = 7 : b8 = document.getElementById("button8").innerText;
       document.getElementById("button9").innerText == '' ? b9 = 8 : b9 = document.getElementById("button9").innerText;
-
+      //could be done simpler but checks every combo of button
       if((b1 == b2 && b2 == b3)||(b4 == b5 && b5 == b6)||(b7 == b8 && b8 == b9)||(b1 == b4 && b4 == b7)||(b2 == b5 && b5 == b8)||(b3 == b6 && b6 == b9)||(b1 == b5 && b5 == b9)||(b3 == b5 && b5 == b7))
       {
         socket.emit("gameOver", {name: name})
         setTimeout(()=>{
+          //if the sum is odd, X wins, even O wins
           sum %2 == 0 ? alert("X wins!") : alert("O wins!");
           setTimeout(()=>{
             location.reload();
@@ -207,6 +212,7 @@
       {
         socket.emit("gameOver", {name: name})
         setTimeout(()=>{
+          //shows draw
           alert("The game is a draw.");
           setTimeout(()=>{
             location.reload();
